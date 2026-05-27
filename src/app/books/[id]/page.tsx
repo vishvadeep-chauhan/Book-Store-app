@@ -1,7 +1,6 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice, formatDate } from "@/lib/utils";
 import { Star } from "lucide-react";

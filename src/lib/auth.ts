@@ -1,7 +1,6 @@
 import NextAuth, { type DefaultSession } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { loginSchema } from "@/validations/auth";
 import type { Role } from "@prisma/client";
@@ -40,6 +39,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const user = await prisma.user.findUnique({ where: { email: parsed.data.email } });
         if (!user) return null;
 
+        // Dynamic import keeps bcrypt out of the Edge runtime bundle
+        const bcrypt = await import("bcryptjs");
         const valid = await bcrypt.compare(parsed.data.password, user.password);
         if (!valid) return null;
 

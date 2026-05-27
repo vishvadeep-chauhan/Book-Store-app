@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { formatPrice, formatDate } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { OrderStatusSelect } from "@/components/admin/order-status-select";
 
 export default async function AdminOrdersPage() {
