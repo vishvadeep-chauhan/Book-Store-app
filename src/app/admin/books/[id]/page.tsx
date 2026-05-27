@@ -14,7 +14,12 @@ export default async function EditBookPage({ params }: { params: Promise<{ id: s
       <h1 className="text-2xl font-bold">Edit Book</h1>
       <BookForm
         categories={categories}
-        initial={{ ...book, price: Number(book.price) }}
+        initial={{
+          ...book,
+          price: Number(book.price),
+          isbn: book.isbn ?? undefined,
+          publishedDate: book.publishedDate ?? undefined,
+        }}
       />
     </div>
   );
