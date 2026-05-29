@@ -3,6 +3,7 @@
 import type { NextAuthConfig } from "next-auth";
 
 export const authConfig = {
+  secret: process.env.AUTH_SECRET ?? (process.env.NODE_ENV === "production" ? undefined : "bookify-local-dev-secret"),
   pages: { signIn: "/login" },
   session: { strategy: "jwt" },
   providers: [],

@@ -2,6 +2,7 @@
 // Never imported by middleware (which runs on Edge).
 import NextAuth, { type DefaultSession } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import { loginSchema } from "@/validations/auth";
@@ -34,7 +35,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!parsed.success) return null;
 
         const user = await prisma.user.findUnique({ where: { email: parsed.data.email } });
-        if (!user) return null;
+        if (!user?.password) return null;
 
         // Dynamic import — keeps bcrypt out of any edge bundle
         const bcrypt = await import("bcryptjs");
@@ -46,12 +47,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: user.email,
           name: user.name,
           role: user.role,
-          image: user.profileImage ?? null,
+          image: user.profileImage ?? user.image ?? null,
         };
       },
     }),
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
   ],
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET ?? authConfig.secret,
 });
 
 export async function requireAuth() {

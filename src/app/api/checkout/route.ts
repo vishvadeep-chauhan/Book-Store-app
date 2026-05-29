@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma";
-import { stripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 import { ok, fail, handleError } from "@/lib/api-response";
 import { requireAuth } from "@/lib/auth";
 
 export async function POST() {
   try {
+    const stripe = getStripe();
     const session = await requireAuth();
     const cart = await prisma.cart.findUnique({
       where: { userId: session.user.id },
@@ -40,7 +41,7 @@ export async function POST() {
       customer_email: session.user.email ?? undefined,
       line_items: cart.items.map((it) => ({
         price_data: {
-          currency: "usd",
+          currency: "inr",
           product_data: { name: it.book.title, images: [it.book.image] },
           unit_amount: Math.round(Number(it.book.price) * 100),
         },

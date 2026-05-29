@@ -6,6 +6,8 @@ import { formatPrice, formatDate } from "@/lib/utils";
 import { Star } from "lucide-react";
 import { AddToCartButton } from "@/components/books/add-to-cart-button";
 
+export const dynamic = "force-dynamic";
+
 export default async function BookDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const book = await prisma.book.findUnique({

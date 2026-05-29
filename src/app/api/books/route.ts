@@ -3,12 +3,17 @@ import { prisma } from "@/lib/prisma";
 import { bookSchema, bookQuerySchema } from "@/validations/book";
 import { ok, handleError } from "@/lib/api-response";
 import { requireAdmin } from "@/lib/auth";
+import { demoBooks } from "@/lib/demo-data";
 import type { Prisma } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
   try {
     const sp = Object.fromEntries(req.nextUrl.searchParams);
     const { q, category, minPrice, maxPrice, sort, page, limit } = bookQuerySchema.parse(sp);
+
+    if (!process.env.DATABASE_URL) {
+      return ok(getDemoBooks({ q, category, sort, page, limit }));
+    }
 
     const where: Prisma.BookWhereInput = {
       AND: [
@@ -50,6 +55,33 @@ export async function GET(req: NextRequest) {
   } catch (e) {
     return handleError(e);
   }
+}
+
+function getDemoBooks({
+  q,
+  category,
+  sort,
+  page,
+  limit,
+}: {
+  q?: string;
+  category?: string;
+  sort?: string;
+  page: number;
+  limit: number;
+}) {
+  const query = q?.toLowerCase();
+  const filtered = demoBooks
+    .filter((book) => !query || book.title.toLowerCase().includes(query) || book.author.toLowerCase().includes(query))
+    .filter((book) => !category || book.category.slug === category)
+    .sort((a, b) => {
+      if (sort === "price_asc") return Number(a.price) - Number(b.price);
+      if (sort === "price_desc") return Number(b.price) - Number(a.price);
+      if (sort === "rating") return b.rating - a.rating;
+      return b.createdAt.getTime() - a.createdAt.getTime();
+    });
+  const items = filtered.slice((page - 1) * limit, page * limit);
+  return { items, total: filtered.length, page, limit, pages: Math.max(1, Math.ceil(filtered.length / limit)) };
 }
 
 export async function POST(req: NextRequest) {

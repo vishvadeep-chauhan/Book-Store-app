@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { BookCard } from "@/components/books/book-card";
 
+export const dynamic = "force-dynamic";
+
 export default async function WishlistPage() {
   const session = await auth();
   if (!session?.user) return null;

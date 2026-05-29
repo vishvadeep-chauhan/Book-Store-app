@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
 import { DeleteBookButton } from "@/components/admin/delete-book-button";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminBooksPage() {
   const books = await prisma.book.findMany({
     orderBy: { createdAt: "desc" },
