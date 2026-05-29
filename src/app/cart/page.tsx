@@ -29,19 +29,29 @@ export default function CartPage() {
   async function checkout() {
     if (!session?.user) return router.push("/login?callbackUrl=/cart");
     setLoading(true);
-    // Clear DB cart first, then sync local state (avoids double-increment)
-    await fetch("/api/cart", { method: "DELETE" });
-    for (const item of items) {
-      await fetch("/api/cart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bookId: item.bookId, quantity: item.quantity }),
-      });
+    try {
+      // Clear DB cart first, then sync local state (avoids double-increment)
+      await fetch("/api/cart", { method: "DELETE" });
+      for (const item of items) {
+        await fetch("/api/cart", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ bookId: item.bookId, quantity: item.quantity }),
+        });
+      }
+      const res = await fetch("/api/checkout", { method: "POST" });
+      const json = await res.json();
+      setLoading(false);
+      if (json.success && json.data?.url) {
+        window.location.href = json.data.url;
+      } else {
+        alert(json.error || "Something went wrong during checkout. Please try again.");
+      }
+    } catch (err) {
+      console.error("Checkout error:", err);
+      setLoading(false);
+      alert("An unexpected error occurred. Please try again.");
     }
-    const res = await fetch("/api/checkout", { method: "POST" });
-    const json = await res.json();
-    setLoading(false);
-    if (json.data?.url) window.location.href = json.data.url;
   }
 
   if (items.length === 0) {
